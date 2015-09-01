@@ -1,0 +1,14 @@
+[handler]
+class=DockerGlue.handlers.publishers.distconfig.Publisher
+events=all,none
+enabled=1
+
+[params]
+# see https://github.com/jplana/python-etcd/blob/master/src/etcd/client.py
+class=distconfig.backends.etcd.EtcdBackend
+clientParams={"host": (("10.0.0.2", 4001), ("10.0.0.3", 4001))}
+#class=distconfig.backends.consul.ConsulBackend
+# clientParams={"token":"","host":"127.0.0.1", "port":8500}
+#class=distconfig.backends.zookeeper.ZooKeeperBackend
+#clientParams={"hosts":"10.0.0.2:2181,10.0.0.3:2181", auth_data:("digest", "something")}
+

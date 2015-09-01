@@ -1,0 +1,10 @@
+[handler]
+class=DockerGlue.handlers.exec.ScriptHandler
+events=create,destroy
+enabled=1
+triggers-none=1
+
+[params]
+script=clampify-handler.sh
+neutron-net=demo
+

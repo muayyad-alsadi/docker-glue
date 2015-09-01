@@ -1,0 +1,7 @@
+[handler]
+class=DockerGlue.handlers.lb.HAProxyHandler
+events=die,start,none
+enabled=1
+
+[params]
+#template_dir=

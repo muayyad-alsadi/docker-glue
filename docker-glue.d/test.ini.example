@@ -1,0 +1,10 @@
+[handler]
+class=DockerGlue.handlers.exec.ScriptHandler
+events=all
+enabled=1
+;triggers-none=0
+
+[params]
+script=test-handler.sh
+demo-option=some value
+

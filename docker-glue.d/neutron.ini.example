@@ -1,0 +1,12 @@
+[handler]
+class=DockerGlue.handlers.exec.ScriptHandler
+events=create,destroy
+enabled=1
+triggers-none=1
+
+[params]
+# will be passed path to this file, event status and container id
+# ovs-handler.sh /path/ovs.ini create 12345
+script=neutron-handler.sh
+#my-custom-key=my value
+

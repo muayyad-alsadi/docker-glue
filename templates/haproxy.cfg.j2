@@ -1,0 +1,50 @@
+{% extends "haproxy_base.cfg.j2" %}
+
+{% block content %}
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+{% for port, hosts_n_prefixes in sorted_config_by_port.items() %}
+frontend  http_{{port}}
+    ## TODO: allow custom bind
+    bind *:{{port}}
+    # bind *:443 ssl crt-list /etc/haproxy/crt/crt.map no-sslv3
+
+    {% for host, prefixes in hosts_n_prefixes %}
+        {% set acl_key = "{0}_{1}_host".format(host, loop.index) %}
+        acl {{acl_key}} hdr(Host) -i {{host}}
+        acl {{acl_key}} hdr_beg(Host) -i .{{host}}
+        {% for prefix in prefixes %}
+            {% if prefix %}
+                 # acl {{host}}_{{loop.index}} base_beg {{host}}/{{prefix}}
+                acl {{host}}_{{loop.index}}_prefix path_beg /{{prefix}}
+                use_backend be_{{port}}_{{host}}_{{loop.index}} if {{acl_key}} {{host}}_{{loop.index}}_prefix
+            {% else %}
+                use_backend be_{{port}}_{{host}}_{{loop.index}} if {{acl_key}}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
+
+#---------------------------------------------------------------------
+# backends
+#---------------------------------------------------------------------
+{% for port, hosts_n_prefixes in sorted_config_by_port.items() %}
+    {% for host, prefixes in hosts_n_prefixes %}
+        {% for prefix in prefixes %}
+{% set be_key = "be_{0}_{1}_{2}".format(port, host, loop.index) %}
+backend {{be_key}}
+    balance     roundrobin
+            {% if http_mapping[port][host][prefix][0][2]=='1' %}
+    reqrep ^([^\ :]*)\ /{{prefix | re_escape}}(.*)     \1\ /\2
+            {% endif %}
+            {% for ip, weight, strip_prefix in http_mapping[port][host][prefix] %}
+    server      {{be_key}}_{{loop.index}} {{ip}}:{{port}} weight {{weight}} check
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
+
+
+{% endblock content %}

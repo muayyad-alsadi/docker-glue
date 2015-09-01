@@ -1,0 +1,89 @@
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.5/doc/configuration.txt
+#   /usr/share/doc/haproxy/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    user        haproxy
+    group       haproxy
+    daemon
+    crt-base /etc/haproxy/crt/
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    # NOTE: see /usr/share/doc/haproxy/configuration.txt
+    # NOTE: time is in millisecond but you can add suffixes like us, ms, s, m, h, d
+    # NOTE: set health-checks
+    default-server inter 500ms rise 2 fall 3
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    # NOTE: retries is for connection establishment (nothing to do with response code)
+    retries                 3
+    # the time out for both connect and read
+    timeout check           10s
+    # NOTE: time for the header (not the body) it's safe to lower this even for post requests
+    timeout http-request    10s
+    # NOTE: time to establish connection by client, should not take much.
+    timeout connect         5s
+    # NOTE: client has to do it with this period except for websocket which will be overriden by "timeout tunnel" below
+    timeout client          1m
+    # NOTE: the back-end part of the previous
+    timeout server          25s
+    # NOTE: how much time to keep things pending in the queue
+    timeout queue           30s
+    timeout http-keep-alive 10s
+    # NOTE: 8kB each, it's safe to set it it 50,000 for a system with 1GB
+    maxconn                 10000
+
+    # NOTE: better stats with ~0.5% slower performance
+    option  contstats
+    # NOTE: backlog in linux defaults to 128 which is too low, see listen(2)
+    backlog 5000
+    # NOTE: tarpit is how we response to bad guys
+    timeout tarpit          30s
+    # NOTE: how long we keep websockets and how soon we close non-responsive clients
+    timeout tunnel        1h
+    timeout client-fin    30s
+
+listen stats 127.0.0.1:5000
+    mode http
+    stats uri /
+
+
+{% block content %}{% endblock %}
+

@@ -1,0 +1,21 @@
+# systemd unit file for docker glue
+# see
+# http://fedoraproject.org/wiki/Systemd
+# http://www.freedesktop.org/software/systemd/man/systemd.unit.html
+# http://www.freedesktop.org/software/systemd/man/systemd.service.html
+# http://superuser.com/questions/393423/the-symbol-and-systemctl-and-vsftpd
+
+[Unit]
+Description=Docker Glue
+After=docker.service
+After=haproxy.service
+Requires=docker.service
+# Requires=haproxy.service
+
+[Service]
+Type=simple
+ExecStart=/root/docker-glue/docker-glue -w
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

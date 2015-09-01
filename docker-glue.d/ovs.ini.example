@@ -1,0 +1,14 @@
+[handler]
+class=DockerGlue.handlers.exec.ScriptHandler
+events=create,destroy
+enabled=1
+triggers-none=1
+
+[params]
+# will be passed path to this file, event status and container id
+# like this: ovs-handler.sh /path/ovs.ini create 12345
+script=ovs-handler.sh
+ovs-bridge=br-int
+#ovs-interface=eth0
+#ovs-options=--mtu=1450
+
